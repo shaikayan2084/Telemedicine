@@ -68,7 +68,7 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
     });
-    console.log('✅ MongoDB connected successfully');
+    console.log('✅ MongoDB connected successfully to Telemedicine database');
   } catch (err) {
     console.error('❌ MongoDB connection error:', err.message);
     process.exit(1);
