@@ -5,8 +5,8 @@ const { generateSecureToken } = require('../utils/encryption');
 
 const appointmentSchema = z.object({
   doctor: z.string().min(1),
-  startTime: z.string().datetime(),
-  endTime: z.string().datetime(),
+  startTime: z.string(),
+  endTime: z.string(),
   timezone: z.string().default('UTC'),
   consultationType: z.enum(['video', 'in_person']).default('video'),
   chiefComplaint: z.string().min(1).max(500),

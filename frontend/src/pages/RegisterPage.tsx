@@ -7,6 +7,7 @@ import { LocalHospital } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import useAuthStore from '../hooks/useAuthStore';
+import { SPECIALTY_OPTIONS } from '../utils/specialties';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -79,7 +80,14 @@ const RegisterPage: React.FC = () => {
 
             {form.role === 'doctor' && (
               <>
-                <TextField fullWidth label="Specialty" name="specialty" sx={{ mt: 2 }} value={form.specialty} onChange={handleChange} required />
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel>Specialty</InputLabel>
+                  <Select name="specialty" value={form.specialty} label="Specialty" onChange={handleChange} required>
+                    {SPECIALTY_OPTIONS.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <TextField fullWidth label="License Number" name="licenseNumber" sx={{ mt: 2 }} value={form.licenseNumber} onChange={handleChange} required />
               </>
             )}

@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../hooks/useAuthStore';
 import { appointmentsAPI, medicalRecordsAPI, prescriptionsAPI } from '../services/api';
 import NavLayout from '../components/shared/NavLayout';
+import { getSpecialtyDisplay } from '../utils/specialties';
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
   <Card>
@@ -110,6 +111,11 @@ const DashboardPage: React.FC = () => {
                         </Avatar>
                         <Box>
                           <Typography fontWeight={600}>{name}</Typography>
+                          {user?.role === 'patient' && other?.specialty && (
+                            <Typography variant="caption" color="text.secondary">
+                              {getSpecialtyDisplay(other.specialty)}
+                            </Typography>
+                          )}
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <AccessTime sx={{ fontSize: 14, color: 'text.secondary' }} />
                             <Typography variant="body2" color="text.secondary">

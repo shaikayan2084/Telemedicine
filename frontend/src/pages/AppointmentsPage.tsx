@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { appointmentsAPI, doctorsAPI } from '../services/api';
 import useAuthStore from '../hooks/useAuthStore';
 import NavLayout from '../components/shared/NavLayout';
+import { getSpecialtyDisplay, SPECIALTY_OPTIONS } from '../utils/specialties';
 
 const statusColor: Record<string, any> = {
   pending: 'warning', confirmed: 'success', cancelled: 'error',
@@ -25,6 +26,7 @@ const AppointmentsPage: React.FC = () => {
   const [bookOpen, setBookOpen] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = useState('');
   const [form, setForm] = useState({
     doctor: '', startTime: '', endTime: '',
     chiefComplaint: '', consultationType: 'video',
@@ -44,6 +46,22 @@ const AppointmentsPage: React.FC = () => {
     }
   }, []);
 
+  const filteredDoctors = selectedSpecialty
+    ? doctors.filter((d) => d.specialty === selectedSpecialty)
+    : doctors;
+
+  const handleSpecialtyChange = (specialty: string) => {
+    setSelectedSpecialty(specialty);
+    setForm({ ...form, doctor: '' });
+  };
+
+  const openBookDialog = () => {
+    setSelectedSpecialty('');
+    setForm({ doctor: '', startTime: '', endTime: '', chiefComplaint: '', consultationType: 'video' });
+    setError('');
+    setBookOpen(true);
+  };
+
   const handleBook = async () => {
     setError('');
     try {
@@ -51,7 +69,6 @@ const AppointmentsPage: React.FC = () => {
       setSuccess('Appointment booked successfully!');
       setBookOpen(false);
       fetchAppointments();
-      setForm({ doctor: '', startTime: '', endTime: '', chiefComplaint: '', consultationType: 'video' });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Booking failed');
     }
@@ -72,7 +89,7 @@ const AppointmentsPage: React.FC = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4">Appointments</Typography>
           {user?.role === 'patient' && (
-            <Button variant="contained" startIcon={<Add />} onClick={() => setBookOpen(true)}>
+            <Button variant="contained" startIcon={<Add />} onClick={openBookDialog}>
               Book Appointment
             </Button>
           )}
@@ -103,7 +120,7 @@ const AppointmentsPage: React.FC = () => {
                           <Box>
                             <Typography fontWeight={600}>{name}</Typography>
                             {user?.role === 'patient' && other?.specialty && (
-                              <Typography variant="caption" color="text.secondary">{other.specialty}</Typography>
+                              <Typography variant="caption" color="text.secondary">{getSpecialtyDisplay(other.specialty)}</Typography>
                             )}
                           </Box>
                         </Box>
@@ -154,17 +171,33 @@ const AppointmentsPage: React.FC = () => {
           <DialogTitle>Book New Appointment</DialogTitle>
           <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
             {error && <Alert severity="error">{error}</Alert>}
+
+            <FormControl fullWidth>
+              <InputLabel>Doctor Type</InputLabel>
+              <Select value={selectedSpecialty} label="Doctor Type"
+                onChange={(e) => handleSpecialtyChange(e.target.value)}>
+                <MenuItem value="">All Specialties</MenuItem>
+                {SPECIALTY_OPTIONS.map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
             <FormControl fullWidth>
               <InputLabel>Select Doctor</InputLabel>
               <Select value={form.doctor} label="Select Doctor"
                 onChange={(e) => setForm({ ...form, doctor: e.target.value })}>
-                {doctors.map((d) => (
+                {filteredDoctors.length === 0 && (
+                  <MenuItem disabled value="">No doctors available for this specialty</MenuItem>
+                )}
+                {filteredDoctors.map((d) => (
                   <MenuItem key={d._id} value={d._id}>
-                    Dr. {d.firstName} {d.lastName} — {d.specialty}
+                    Dr. {d.firstName} {d.lastName} — {getSpecialtyDisplay(d.specialty)}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
+
             <TextField label="Start Time" type="datetime-local" value={form.startTime}
               onChange={(e) => setForm({ ...form, startTime: e.target.value })}
               InputLabelProps={{ shrink: true }} fullWidth />

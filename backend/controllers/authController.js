@@ -1,7 +1,9 @@
 const { z } = require('zod');
+const mongoose = require('mongoose');
 const Patient = require('../models/Patient');
 const Doctor = require('../models/Doctor');
 const { signToken } = require('../utils/tokenUtils');
+const { SPECIALTY_KEYS } = require('../utils/specialties');
 
 // ─── Zod Validation Schemas ───────────────────────────────────────────────────
 const registerSchema = z.object({
@@ -12,7 +14,7 @@ const registerSchema = z.object({
   lastName: z.string().min(1).max(50),
   role: z.enum(['patient', 'doctor']),
   // Doctor-specific
-  specialty: z.string().optional(),
+  specialty: z.enum(SPECIALTY_KEYS).optional(),
   licenseNumber: z.string().optional(),
 });
 
@@ -75,6 +77,9 @@ exports.login = async (req, res, next) => {
       user = await Patient.findOne({ email }).select('+password');
     } else if (role === 'doctor') {
       user = await Doctor.findOne({ email }).select('+password');
+    } else if (role === 'admin') {
+      const Admin = mongoose.models.Admin || require('../models/Admin');
+      user = await Admin.findOne({ email }).select('+password');
     }
 
     if (!user || !(await user.comparePassword(password))) {
@@ -85,8 +90,10 @@ exports.login = async (req, res, next) => {
       return res.status(403).json({ message: 'Account deactivated. Contact admin.' });
     }
 
-    user.lastLogin = new Date();
-    await user.save({ validateBeforeSave: false });
+    if (role !== 'admin') {
+      user.lastLogin = new Date();
+      await user.save({ validateBeforeSave: false });
+    }
 
     const token = signToken({ id: user._id, role });
 
