@@ -1,0 +1,1 @@
+export { VerifyPrescriptionPage as default } from './StubPages';
