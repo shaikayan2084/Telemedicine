@@ -11,7 +11,7 @@ timeout /t 3 /nobreak >nul
 start "Frontend" /B cmd /c "cd frontend && npm start > frontend.log 2>&1"
 
 echo.
-echo All services starting...
+echo All services started on %DATE% %TIME%
 echo Frontend: http://localhost:3000
 echo Backend:  http://localhost:5000
 echo.
